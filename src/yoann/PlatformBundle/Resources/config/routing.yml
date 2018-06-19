@@ -1,0 +1,7 @@
+yoann_platform_homepage:
+    path:     /
+    defaults: { _controller: yoannPlatformBundle:Default:index }
+
+hello_the_world:
+    path:     /hello-world
+    defaults: { _controller: yoannPlatformBundle:Advert:index }
