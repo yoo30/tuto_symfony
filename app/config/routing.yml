@@ -1,7 +1,8 @@
-yoann_platform:
-    resource: "@yoannPlatformBundle/Resources/config/routing.yml"
+yoann_core:
+    resource: "@yoannCoreBundle/Resources/config/routing.yml"
     prefix:   /
 
-app:
-    resource: '@AppBundle/Controller/'
-    type: annotation
+yoann_platform:
+    resource: "@yoannPlatformBundle/Resources/config/routing.yml"
+    prefix:   /platform
+

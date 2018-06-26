@@ -1,4 +1,7 @@
 services:
-#    yoann_platform.example:
-#        class: yoann\PlatformBundle\Example
-#        arguments: ["@service_id", "plain_value", "%parameter%"]
+    yoann_platform.antispam:
+        class: yoann\PlatformBundle\Antispam\yoannAntispam
+        arguments:
+            - "@mailer"
+            - %locale%
+            - 50

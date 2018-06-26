@@ -1,7 +1,38 @@
-yoann_platform_homepage:
-    path:     /
-    defaults: { _controller: yoannPlatformBundle:Default:index }
+good_bye:
+    path:     /good_bye
+    defaults: { _controller: yoannPlatformBundle:Advert:good_bye }
 
-hello_the_world:
-    path:     /hello-world
-    defaults: { _controller: yoannPlatformBundle:Advert:index }
+yoann_platform_home:
+    path:     /{page}
+    defaults: { _controller: yoannPlatformBundle:Advert:index, page: 1 }
+    requirements:
+       page: \d*
+
+yoann_platform_view:
+    path:     /advert/{id}
+    defaults: { _controller: yoannPlatformBundle:Advert:view }
+    requirements:
+        id: \d+ 
+
+yoann_platform_add:
+    path:     /add
+    defaults: {  _controller: yoannPlatformBundle:Advert:add }
+
+yoann_platform_edit:
+    path:     /edit/{id}
+    defaults: { _controller: yoannPlatformBundle:Advert:edit }
+    requirements:
+        id: \d+ 
+
+yoann_platform_delete:
+    path:     /delete/{id}
+    defaults: { _controller: yoannPlatformBundle:Advert:delete }
+    requirements:
+        id: \d+ 
+
+yoann_platform_view_slug:
+    path:     /{year}/{slug}.{format}
+    defaults: { _controller: yoannPlatformBundle:Advert:viewSlug, format: html }
+    requirements:
+        year:   \d{4}
+        format: html|xml

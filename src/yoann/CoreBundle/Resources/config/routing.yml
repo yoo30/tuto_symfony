@@ -1,0 +1,3 @@
+yoann_core_homepage:
+    path:     /
+    defaults: { _controller: yoannCoreBundle:Default:index }

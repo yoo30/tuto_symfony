@@ -1,0 +1,4 @@
+services:
+#    yoann_core.example:
+#        class: yoann\CoreBundle\Example
+#        arguments: ["@service_id", "plain_value", "%parameter%"]
