@@ -16,4 +16,14 @@ class AccueilController extends Controller
 		//return new Response("mon propre Hello World !!!");
 		return $this->render('yoannCoreBundle:homepage:homepage.html.twig');
 	}
+
+
+	public function contactAction(Request $request)
+	{
+		$session = $request->getSession();
+
+		$session->getFlashBag()->add('info', 'La page contact n\'est pas encore disponible, merci de revenir plus tard.');
+
+		return $this->redirectToRoute('homepage');
+	}
 }

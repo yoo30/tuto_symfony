@@ -6,5 +6,25 @@
 
 {% block body %}
 
-	<h1>Accueil de Yoo</h1>
+	<h2 align="center">Accueil du site</h2>
+
+		<div class="jumbotron">
+			<p>Ceci est la page d'accueil du site, pour me contacter merci de cliquer <a href="{{ path('yoann_contact') }}">ICI :)</a></p>
+		</div>
+		<div class="alert alert-primary" role="alert">
+		{% for message in app.session.flashbag.get('info') %}
+			
+				<p>Message flash : {{ message }}</p>
+			
+		{% endfor %}
+		</div>
+	<div class="jumbotron">
+		<h2>Les 3 derniéres annonces :</h2>
+
+		<hr>
+
+		{{ render(controller("yoannPlatformBundle:Advert:menu", {'limit': 3})) }}
+
+	</div>
+		
 {% endblock %}
