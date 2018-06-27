@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpFoundation\Response;
+use yoann\PlatformBundle\Entity\Advert;
 
 class AdvertController extends Controller
 {
@@ -86,6 +87,25 @@ class AdvertController extends Controller
 
     public function addAction(Request $request)
     {
+        //creation de l'entité
+        $advert = new Advert();
+        $advert->setTitle('Recherche développpeur Symfony2');
+        $advert->setAuthor('Alexandre');
+        $advert->setContent('Nous recherchons un développeur Symfony2 débutant sur Lyon. Blabla…');
+        $advert->setDate(new \Datetime());
+            // On peut ne pas définir ni la date ni la publication,
+            // car ces attributs sont définis automatiquement dans le constructeur
+
+            // On récupère l'EntityManager
+        $em =$this->getDoctrine()->getManager();
+
+        //etape 1 : on PERSISTE l'entité
+        $em->persist($advert);
+
+        //etape 2 : on FLUSH tout ce qui a été persisté avant
+        $em->flush();
+
+
 
         //on recupere le service
         $antispam = $this->container->get('yoann_platform.antispam');
@@ -107,7 +127,7 @@ class AdvertController extends Controller
 
     		//puis on redirige vers la page de visualisation, de cette annonce 
 
-    		return $this->redirectToRoute('yoann_platform_view', array('id' => 5));
+    		return $this->redirectToRoute('yoann_platform_view', array('id' => $advert->getId()));
     	}
     	
     	//si on n'est pas en POST, alors on affiche le formulaire 
