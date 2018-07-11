@@ -12,6 +12,13 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Advert
 {
+
+       /**
+       * @ORM\OneToOne(targetEntity="yoann\PlatformBundle\Entity\Image", cascade={"persist"})
+       */
+      private $image;
+
+  
     /**
      * @var int
      *
@@ -160,5 +167,28 @@ class Advert
     {
         return $this->content;
     }
-}
 
+    /**
+     * Set published
+     *
+     * @param boolean $published
+     *
+     * @return Advert
+     */
+    public function setPublished($published)
+    {
+        $this->published = $published;
+
+        return $this;
+    }
+
+    /**
+     * Get published
+     *
+     * @return boolean
+     */
+    public function getPublished()
+    {
+        return $this->published;
+    }
+}

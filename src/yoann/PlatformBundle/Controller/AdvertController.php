@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpFoundation\Response;
 use yoann\PlatformBundle\Entity\Advert;
+use yoann\PlatformBundle\Entity\Image;
 
 class AdvertController extends Controller
 {
@@ -61,14 +62,21 @@ class AdvertController extends Controller
 	public function viewAction($id)
 	{
 
-    $advert = array(
-      'title'   => 'Recherche développpeur Symfony2',
-      'id'      => $id,
-      'author'  => 'Alexandre',
-      'content' => 'Nous recherchons un développeur Symfony2 débutant sur Lyon. Blabla…',
-      'date'    => new \Datetime()
-    );
+    //on récupere le repository
+    $repository = $this->getDoctrine()
+        ->getManager()
+        ->getRepository('yoannPlatformBundle:Advert');
 
+    // on  recupere l'entité correspondante à l'id $id
+    $advert = $repository->find($id);
+
+    // $advert est donc une instance de yoann\PlatformBundle\Entity\Advert
+    // ou null si l'id $id n'existe pas, d'ou ce if
+    if (null === $advert) {
+        throw new NotFoundHttpException("L'annonce d'id ".$id." n'existe pas.");
+    }
+
+    // le rneder ne change pas, on passait un tableau, maintenant un objet
     return $this->render('yoannPlatformBundle:Advert:view.html.twig', array(
       'advert' => $advert
     ));
@@ -89,18 +97,29 @@ class AdvertController extends Controller
     {
         //creation de l'entité
         $advert = new Advert();
-        $advert->setTitle('Recherche développpeur Symfony2');
-        $advert->setAuthor('Alexandre');
-        $advert->setContent('Nous recherchons un développeur Symfony2 débutant sur Lyon. Blabla…');
+        $advert->setTitle('Recherche développpeur une bombe');
+        $advert->setAuthor('Amelie');
+        $advert->setContent('Nous recherchons  Blabla…');
         $advert->setDate(new \Datetime());
-            // On peut ne pas définir ni la date ni la publication,
-            // car ces attributs sont définis automatiquement dans le constructeur
 
-            // On récupère l'EntityManager
+
+        //création de l'entité Image
+        $image = new Image();
+        $image->setUrl('http://sdz-upload.s3.amazonaws.com/prod/upload/job-de-reve.jpg');
+        $image->setAlt('Job de reve');
+
+        //on lie l'image à l'annonce
+        $advert->setImage($image);
+
+        // On récupère l'EntityManager
         $em =$this->getDoctrine()->getManager();
 
         //etape 1 : on PERSISTE l'entité
         $em->persist($advert);
+
+        // Étape 1 bis : si on n'avait pas défini le cascade={"persist"},
+        // on devrait persister à la main l'entité $image
+        // $em->persist($image);
 
         //etape 2 : on FLUSH tout ce qui a été persisté avant
         $em->flush();
