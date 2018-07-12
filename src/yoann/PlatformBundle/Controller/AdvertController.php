@@ -8,6 +8,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpFoundation\Response;
 use yoann\PlatformBundle\Entity\Advert;
 use yoann\PlatformBundle\Entity\Image;
+use yoann\PlatformBundle\Entity\Application;
 
 class AdvertController extends Controller
 {
@@ -62,23 +63,24 @@ class AdvertController extends Controller
 	public function viewAction($id)
 	{
 
-    //on récupere le repository
-    $repository = $this->getDoctrine()
-        ->getManager()
-        ->getRepository('yoannPlatformBundle:Advert');
+    $em = $this->getDoctrine()->getManager();
 
-    // on  recupere l'entité correspondante à l'id $id
-    $advert = $repository->find($id);
+    // On récupère l'annonce $id
+    $advert = $em->getRepository('yoannPlatformBundle:Advert')->find($id);
 
-    // $advert est donc une instance de yoann\PlatformBundle\Entity\Advert
-    // ou null si l'id $id n'existe pas, d'ou ce if
     if (null === $advert) {
         throw new NotFoundHttpException("L'annonce d'id ".$id." n'existe pas.");
     }
 
-    // le rneder ne change pas, on passait un tableau, maintenant un objet
+    // on recupere la liste des candidatures de cette annonce
+    $listApplications = $em
+        ->getRepository('yoannPlatformBundle:Application')
+        ->findBy(array('advert' => $advert));
+
+    // le render ne change pas, on passait un tableau, maintenant un objet
     return $this->render('yoannPlatformBundle:Advert:view.html.twig', array(
-      'advert' => $advert
+      'advert' => $advert,
+      'listApplications' => $listApplications
     ));
 	}
 
@@ -95,21 +97,40 @@ class AdvertController extends Controller
 
     public function addAction(Request $request)
     {
-        //creation de l'entité
+        //creation de l'entité Advert
         $advert = new Advert();
         $advert->setTitle('Recherche développpeur une bombe');
         $advert->setAuthor('Amelie');
         $advert->setContent('Nous recherchons  Blabla…');
         $advert->setDate(new \Datetime());
 
+        //creation d'une premiére candidature
+        $application1 = new Application();
+        $application1->setAuthor('Amelie');
+        $application1->setContent("J'ai toutes les qualités requises mais les technologies ne m'aiment pas");
+        $application1->setDate(new \Datetime());
 
-        //création de l'entité Image
+        //création d'une deuxieme candidature
+        $application2 = new Application();
+        $application2->setAuthor('Matteo');
+        $application2->setContent("Je suis trés motivé car c'est un projet Star Wars");
+        $application2->setDate(new \Datetime());
+
+/*        //création de l'entité Image
         $image = new Image();
         $image->setUrl('http://sdz-upload.s3.amazonaws.com/prod/upload/job-de-reve.jpg');
         $image->setAlt('Job de reve');
 
         //on lie l'image à l'annonce
-        $advert->setImage($image);
+        $advert->setImage($image);*/
+
+        // Étape 1 bis : si on n'avait pas défini le cascade={"persist"},
+        // on devrait persister à la main l'entité $image
+        // $em->persist($image);
+
+        //on lie les candidatures à l'annonce
+        $application1->setAdvert($advert);
+        $application2->setAdvert($advert);
 
         // On récupère l'EntityManager
         $em =$this->getDoctrine()->getManager();
@@ -117,9 +138,11 @@ class AdvertController extends Controller
         //etape 1 : on PERSISTE l'entité
         $em->persist($advert);
 
-        // Étape 1 bis : si on n'avait pas défini le cascade={"persist"},
-        // on devrait persister à la main l'entité $image
-        // $em->persist($image);
+
+        // Étape 1 ter : pour cette relation pas de cascade lorsqu'on persiste Advert, car la relation est
+        // définie dans l'entité Application et non Advert. On doit donc tout persister à la main ici.
+        $em->persist($application1);
+        $em->persist($application2);
 
         //etape 2 : on FLUSH tout ce qui a été persisté avant
         $em->flush();

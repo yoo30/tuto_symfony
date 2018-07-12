@@ -3,6 +3,7 @@
 namespace yoann\PlatformBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * Advert
@@ -13,10 +14,15 @@ use Doctrine\ORM\Mapping as ORM;
 class Advert
 {
 
-       /**
-       * @ORM\OneToOne(targetEntity="yoann\PlatformBundle\Entity\Image", cascade={"persist"})
-       */
-      private $image;
+    /**
+    * @ORM\ManyToMany(targetEntity="yoann\PlatformBundle\Entity\Category", cascade={"persist"})
+    */
+    private $categories;
+
+    /**
+     * @ORM\OneToOne(targetEntity="yoann\PlatformBundle\Entity\Image", cascade={"persist"})
+    */
+    private $image;
 
   
     /**
@@ -61,7 +67,13 @@ class Advert
      */
     private $published = true;
 
+  // Comme la propriété $categories doit être un ArrayCollection,
+  // On doit la définir dans un constructeur :
+  public function __construct()
+  {
     
+    $this->categories = new ArrayCollection();
+  }
     /**
      * Get id
      *
@@ -214,5 +226,39 @@ class Advert
     public function getImage()
     {
         return $this->image;
+    }
+
+    /**
+     * Add category
+     *
+     * @param \yoann\PlatformBundle\Entity\Category $category
+     *
+     * @return Advert
+     */
+    public function addCategory(\yoann\PlatformBundle\Entity\Category $category)
+    {
+        $this->categories[] = $category;
+
+        return $this;
+    }
+
+    /**
+     * Remove category
+     *
+     * @param \yoann\PlatformBundle\Entity\Category $category
+     */
+    public function removeCategory(\yoann\PlatformBundle\Entity\Category $category)
+    {
+        $this->categories->removeElement($category);
+    }
+
+    /**
+     * Get categories
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getCategories()
+    {
+        return $this->categories;
     }
 }
