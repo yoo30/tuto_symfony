@@ -13,6 +13,10 @@ use Doctrine\Common\Collections\ArrayCollection;
  */
 class Advert
 {
+    /**
+    *@ORM\OneToMany(targetEntity="yoann\PlatformBundle\Entity\Application", mappedBy="advert")
+    */
+    private $applications; // attention « s » car une annonce est liée à plusieurs candidatures
 
     /**
     * @ORM\ManyToMany(targetEntity="yoann\PlatformBundle\Entity\Category", cascade={"persist"})
@@ -226,5 +230,39 @@ class Advert
     public function getImage()
     {
         return $this->image;
+    }
+
+    /**
+     * Add category
+     *
+     * @param \yoann\PlatformBundle\Entity\Category $category
+     *
+     * @return Advert
+     */
+    public function addCategory(\yoann\PlatformBundle\Entity\Category $category)
+    {
+        $this->categories[] = $category;
+
+        return $this;
+    }
+
+    /**
+     * Remove category
+     *
+     * @param \yoann\PlatformBundle\Entity\Category $category
+     */
+    public function removeCategory(\yoann\PlatformBundle\Entity\Category $category)
+    {
+        $this->categories->removeElement($category);
+    }
+
+    /**
+     * Get categories
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getCategories()
+    {
+        return $this->categories;
     }
 }

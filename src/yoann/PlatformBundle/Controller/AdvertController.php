@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 use yoann\PlatformBundle\Entity\Advert;
 use yoann\PlatformBundle\Entity\Image;
 use yoann\PlatformBundle\Entity\Application;
+use yoann\PlatformBundle\Entity\AdvertSkill;
 
 class AdvertController extends Controller
 {
@@ -26,19 +27,19 @@ class AdvertController extends Controller
     $listAdverts = array(
       array(
         'title'   => 'Recherche développpeur Symfony',
-        'id'      => 1,
+        'id'      => 6,
         'author'  => 'Alexandre',
         'content' => 'Nous recherchons un développeur Symfony débutant sur Lyon. Blabla…',
         'date'    => new \Datetime()),
       array(
         'title'   => 'Mission de webmaster',
-        'id'      => 2,
+        'id'      => 7,
         'author'  => 'Hugo',
         'content' => 'Nous recherchons un webmaster capable de maintenir notre site internet. Blabla…',
         'date'    => new \Datetime()),
       array(
         'title'   => 'Offre de stage webdesigner',
-        'id'      => 3,
+        'id'      => 8,
         'author'  => 'Mathieu',
         'content' => 'Nous proposons un poste pour webdesigner. Blabla…',
         'date'    => new \Datetime())
@@ -66,7 +67,9 @@ class AdvertController extends Controller
     $em = $this->getDoctrine()->getManager();
 
     // On récupère l'annonce $id
-    $advert = $em->getRepository('yoannPlatformBundle:Advert')->find($id);
+    $advert = $em
+        ->getRepository('yoannPlatformBundle:Advert')
+        ->find($id);
 
     if (null === $advert) {
         throw new NotFoundHttpException("L'annonce d'id ".$id." n'existe pas.");
@@ -77,15 +80,23 @@ class AdvertController extends Controller
         ->getRepository('yoannPlatformBundle:Application')
         ->findBy(array('advert' => $advert));
 
+    //on recupere maintenant la liste des AdvertSkill
+    $listAdvertSkills = $em
+        ->getRepository('yoannPlatformBundle:AdvertSkill')
+        ->findBy(array('advert' => $advert));
+
     // le render ne change pas, on passait un tableau, maintenant un objet
     return $this->render('yoannPlatformBundle:Advert:view.html.twig', array(
       'advert' => $advert,
-      'listApplications' => $listApplications
+      'listApplications' => $listApplications,
+      'listAdvertSkills' => $listAdvertSkills
+
     ));
+
 	}
 
 
-	    // On récupère tous les paramètres en arguments de la méthode
+	// On récupère tous les paramètres en arguments de la méthode
     public function viewSlugAction($slug, $year, $format)
     {
         return new Response(
@@ -97,10 +108,15 @@ class AdvertController extends Controller
 
     public function addAction(Request $request)
     {
+
+         // On récupère l'EntityManager
+        $em =$this->getDoctrine()->getManager();
+
+
         //creation de l'entité Advert
         $advert = new Advert();
-        $advert->setTitle('Recherche développpeur une bombe');
-        $advert->setAuthor('Amelie');
+        $advert->setTitle('Recherche développpeur Symfony');
+        $advert->setAuthor('yoann');
         $advert->setContent('Nous recherchons  Blabla…');
         $advert->setDate(new \Datetime());
 
@@ -116,13 +132,13 @@ class AdvertController extends Controller
         $application2->setContent("Je suis trés motivé car c'est un projet Star Wars");
         $application2->setDate(new \Datetime());
 
-/*        //création de l'entité Image
+        //création de l'entité Image
         $image = new Image();
         $image->setUrl('http://sdz-upload.s3.amazonaws.com/prod/upload/job-de-reve.jpg');
         $image->setAlt('Job de reve');
 
         //on lie l'image à l'annonce
-        $advert->setImage($image);*/
+        $advert->setImage($image);
 
         // Étape 1 bis : si on n'avait pas défini le cascade={"persist"},
         // on devrait persister à la main l'entité $image
@@ -132,8 +148,26 @@ class AdvertController extends Controller
         $application1->setAdvert($advert);
         $application2->setAdvert($advert);
 
-        // On récupère l'EntityManager
-        $em =$this->getDoctrine()->getManager();
+
+        //on récupere toutes les competences possibles
+        $listSkills = $em->getRepository('yoannPlatformBundle:Skill')->findAll();
+
+        //Pour chaque competence
+        foreach ($listSkills as $skill){
+            //on crée une nouvelle "relation entre 1 annonce et 1 competence"
+            $advertSkill = new AdvertSkill();
+        }
+
+        //on la lie à l'annonce qui est ici toujours la même
+        $advertSkill->setAdvert($advert);
+        //on la lie à la competence qui change ici dans la boucle foreach
+        $advertSkill->setSkill($skill);
+
+        //arbitrairement on dit que chaque competence est requise au niveau 'Expert'
+        $advertSkill->setLevel('Expert');
+
+        //et bien sur on persiste cette entité de relation, propriétaire des deux autres relations
+        $em->persist($advertSkill);
 
         //etape 1 : on PERSISTE l'entité
         $em->persist($advert);
@@ -186,16 +220,54 @@ class AdvertController extends Controller
 
     		return $this->redirectToRoute('yoann_platform_view', array('id' => 5));
     	}
+            $em = $this->getDoctrine()->getManager();
+
+            // On récupère l'annonce $id
+            $advert = $em->getRepository('yoannPlatformBundle:Advert')->find($id);
+
+            if (null === $advert) {
+              throw new NotFoundHttpException("L'annonce d'id ".$id." n'existe pas.");
+            }
+
+            // La méthode findAll retourne toutes les catégories de la base de données
+            $listCategories = $em->getRepository('yoannPlatformBundle:Category')->findAll();
+
+            // On boucle sur les catégories pour les lier à l'annonce
+            foreach ($listCategories as $category) {
+              $advert->addCategory($category);
+            }
+
+            // Pour persister le changement dans la relation, il faut persister l'entité propriétaire
+            // Ici, Advert est le propriétaire, donc inutile de la persister car on l'a récupérée depuis Doctrine
+
+            // Étape 2 : On déclenche l'enregistrement
+            $em->flush();
 
     	return $this->render('yoannPlatformBundle:Advert:edit.html.twig');
     }
 
+
     public function deleteAction($id)
     {
+        $em = $this->getDoctrine()->getManager();
+    	//on recupere l'annonce $id
+        $advert = $em->getRepository('yoannPlatformBundle:Advert')->find($id);
+    	
+         if (null === $advert) {
+        throw new NotFoundHttpException("L'annonce d'id ".$id." n'existe pas.");
+        }
+            // On boucle sur les catégories de l'annonce pour les supprimer
+            foreach ($advert->getCategories() as $category) {
+            $advert->removeCategory($category);
+             }
 
-    	//ici on recuperera l'annonce correspondant à $id
-    	//ici on gerera la suppression de l'annonce en question
-    return $this->render('yoannPlatformBundle:Advert:delete.html.twig');	
+        // Pour persister le changement dans la relation, il faut persister l'entité propriétaire
+        // Ici, Advert est le propriétaire, donc inutile de la persister car on l'a récupérée depuis Doctrine
+
+        // On déclenche la modification
+        $em->flush();
+
+        return $this->render('yoannPlatformBundle:Advert:delete.html.twig');	
     }
 
     public function menuAction()
